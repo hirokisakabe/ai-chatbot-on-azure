@@ -7,26 +7,24 @@ resource "azurerm_resource_group" "rg" {
   name     = random_pet.rg_name.id
 }
 
-resource "azurerm_app_service_plan" "app_service_plan" {
+resource "azurerm_service_plan" "service_plan" {
   name                = "ai-chatbot-on-azure-plan"
-  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  kind = "Linux"
-  reserved = true
-
-  sku {
-    tier = "Standard"
-    size = "S1"
-  }
+  location            = azurerm_resource_group.rg.location
+  os_type             = "Linux"
+  sku_name            = "P1v2"
 }
 
-resource "azurerm_app_service" "app_service" {
-  name                = "ai-chatbot-on-azure"
-  location            = azurerm_resource_group.rg.location
+resource "azurerm_linux_web_app" "linux_web_app" {
+  name                = "ai-chatbot-on-azure-web-app"
   resource_group_name = azurerm_resource_group.rg.name
-  app_service_plan_id = azurerm_app_service_plan.app_service_plan.id
+  location            = azurerm_service_plan.service_plan.location
+  service_plan_id     = azurerm_service_plan.service_plan.id
 
   site_config {
-   linux_fx_version = "DOCKER|registry.hub.docker.com/library/nginx:latest"
+    application_stack {
+      docker_image_name = "nginx"
+      docker_registry_url = "https://index.docker.io"
+    }
   }
 }
