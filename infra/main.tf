@@ -23,11 +23,14 @@ resource "azurerm_linux_web_app" "linux_web_app" {
 
   site_config {
     application_stack {
-      docker_image_name = "samples/nginx:latest"
+      docker_image_name = "samples/ai-chatbot-on-azure:latest"
       docker_registry_url = "https://aichatbotonazureregistry.azurecr.io"
       docker_registry_username =  azurerm_container_registry.acr.admin_username
       docker_registry_password = azurerm_container_registry.acr.admin_password
     }
+  }
+  app_settings = {
+    WEBSITES_PORT = 3000
   }
   identity {
     type = "SystemAssigned"
