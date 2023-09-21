@@ -23,9 +23,14 @@ resource "azurerm_linux_web_app" "linux_web_app" {
 
   site_config {
     application_stack {
-      docker_image_name = "nginx"
-      docker_registry_url = "https://index.docker.io"
+      docker_image_name = "samples/nginx:latest"
+      docker_registry_url = "https://aichatbotonazureregistry.azurecr.io"
+      docker_registry_username =  azurerm_container_registry.acr.admin_username
+      docker_registry_password = azurerm_container_registry.acr.admin_password
     }
+  }
+  identity {
+    type = "SystemAssigned"
   }
 }
 
