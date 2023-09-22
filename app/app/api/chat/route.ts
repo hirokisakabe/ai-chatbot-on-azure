@@ -1,9 +1,9 @@
-import { kv } from '@vercel/kv'
 import { OpenAIStream, StreamingTextResponse } from 'ai'
 import { Configuration, OpenAIApi } from 'openai-edge'
 
 import { auth } from '@/auth'
 import { nanoid } from '@/lib/utils'
+import { redis } from '@/lib/redis'
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
@@ -45,19 +45,17 @@ export async function POST(req: Request) {
         userId,
         createdAt,
         path,
-        messages: [
+        messages: JSON.stringify([
           ...messages,
           {
             content: completion,
             role: 'assistant'
           }
-        ]
+        ])
       }
-      await kv.hmset(`chat:${id}`, payload)
-      await kv.zadd(`user:chat:${userId}`, {
-        score: createdAt,
-        member: `chat:${id}`
-      })
+
+      await redis.hmset(`chat:${id}`, payload)
+      await redis.zadd(`user:chat:${userId}`, createdAt, `chat:${id}`)
     }
   })
 

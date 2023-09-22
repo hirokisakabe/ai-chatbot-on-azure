@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { kv } from '@vercel/kv'
 
 import { auth } from '@/auth'
 import { type Chat } from '@/lib/types'
+import { redis } from '@/lib/redis'
 
 export async function getChats(userId?: string | null) {
   if (!userId) {
@@ -13,10 +13,8 @@ export async function getChats(userId?: string | null) {
   }
 
   try {
-    const pipeline = kv.pipeline()
-    const chats: string[] = await kv.zrange(`user:chat:${userId}`, 0, -1, {
-      rev: true
-    })
+    const pipeline = redis.pipeline()
+    const chats: string[] = await redis.zrange(`user:chat:${userId}`, 0, -1)
 
     for (const chat of chats) {
       pipeline.hgetall(chat)
@@ -24,20 +22,22 @@ export async function getChats(userId?: string | null) {
 
     const results = await pipeline.exec()
 
-    return results as Chat[]
+    return results?.map(e => e[1]) as Chat[]
   } catch (error) {
     return []
   }
 }
 
 export async function getChat(id: string, userId: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  const chat = await redis.hgetall(`chat:${id}`)
 
   if (!chat || (userId && chat.userId !== userId)) {
     return null
   }
 
-  return chat
+  chat.messages = JSON.parse(chat.messages)
+
+  return chat as Chat
 }
 
 export async function removeChat({ id, path }: { id: string; path: string }) {
@@ -49,7 +49,7 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     }
   }
 
-  const uid = await kv.hget<string>(`chat:${id}`, 'userId')
+  const uid = await redis.hget(`chat:${id}`, 'userId')
 
   if (uid !== session?.user?.id) {
     return {
@@ -57,8 +57,8 @@ export async function removeChat({ id, path }: { id: string; path: string }) {
     }
   }
 
-  await kv.del(`chat:${id}`)
-  await kv.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
+  await redis.del(`chat:${id}`)
+  await redis.zrem(`user:chat:${session.user.id}`, `chat:${id}`)
 
   revalidatePath('/')
   return revalidatePath(path)
@@ -73,11 +73,15 @@ export async function clearChats() {
     }
   }
 
-  const chats: string[] = await kv.zrange(`user:chat:${session.user.id}`, 0, -1)
+  const chats: string[] = await redis.zrange(
+    `user:chat:${session.user.id}`,
+    0,
+    -1
+  )
   if (!chats.length) {
-  return redirect('/')
+    return redirect('/')
   }
-  const pipeline = kv.pipeline()
+  const pipeline = redis.pipeline()
 
   for (const chat of chats) {
     pipeline.del(chat)
@@ -91,13 +95,13 @@ export async function clearChats() {
 }
 
 export async function getSharedChat(id: string) {
-  const chat = await kv.hgetall<Chat>(`chat:${id}`)
+  const chat = await redis.hgetall(`chat:${id}`)
 
   if (!chat || !chat.sharePath) {
     return null
   }
 
-  return chat
+  return chat as Chat
 }
 
 export async function shareChat(chat: Chat) {
@@ -114,7 +118,7 @@ export async function shareChat(chat: Chat) {
     sharePath: `/share/${chat.id}`
   }
 
-  await kv.hmset(`chat:${chat.id}`, payload)
+  await redis.hmset(`chat:${chat.id}`, payload)
 
   return payload
 }
