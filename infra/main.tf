@@ -41,6 +41,7 @@ resource "azurerm_linux_web_app" "linux_web_app" {
     REDIS_HOST=azurerm_redis_cache.redis.hostname
     REDIS_PORT=azurerm_redis_cache.redis.port
     REDIS_PASSWORD=azurerm_redis_cache.redis.primary_access_key
+    OPENAI_API_KEY = var.OPENAI_API_KEY
   }
   identity {
     type = "SystemAssigned"
@@ -68,6 +69,10 @@ variable "AUTH_GITHUB_SECRET" {
   default = null
 }
 variable "NEXTAUTH_URL" {
+  type    = string
+  default = null
+}
+variable "OPENAI_API_KEY" {
   type    = string
   default = null
 }
