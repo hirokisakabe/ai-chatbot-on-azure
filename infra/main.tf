@@ -34,7 +34,7 @@ resource "azurerm_linux_web_app" "linux_web_app" {
     DOCKER_REGISTRY_SERVER_URL = "https://aichatbotonazureregistry.azurecr.io"
     DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.acr.admin_username
     DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.acr.admin_password
-    NEXTAUTH_SECRET = var.AUTH_SECRET
+    NEXTAUTH_SECRET = var.NEXTAUTH_SECRET
     NEXTAUTH_URL = var.NEXTAUTH_URL
     AUTH_GITHUB_ID = var.AUTH_GITHUB_ID
     AUTH_GITHUB_SECRET = var.AUTH_GITHUB_SECRET
@@ -56,7 +56,7 @@ resource "azurerm_container_registry" "acr" {
   admin_enabled       = true
 }
 
-variable "AUTH_SECRET" {
+variable "NEXTAUTH_SECRET" {
   type    = string
   default = null
 }
