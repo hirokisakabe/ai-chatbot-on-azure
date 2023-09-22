@@ -38,6 +38,9 @@ resource "azurerm_linux_web_app" "linux_web_app" {
     NEXTAUTH_URL = var.NEXTAUTH_URL
     AUTH_GITHUB_ID = var.AUTH_GITHUB_ID
     AUTH_GITHUB_SECRET = var.AUTH_GITHUB_SECRET
+    REDIS_HOST=azurerm_redis_cache.redis.hostname
+    REDIS_PORT=azurerm_redis_cache.redis.port
+    REDIS_PASSWORD=azurerm_redis_cache.redis.primary_access_key
   }
   identity {
     type = "SystemAssigned"
