@@ -13,15 +13,11 @@ OpenAI は Azure AI services ではなく、OpenAI の API を直接使ってい
 ## infra のデプロイ手順
 
 ```bash
-export TF_VAR_NEXTAUTH_SECRET=...
-export TF_VAR_AUTH_GITHUB_ID=...
-export TF_VAR_AUTH_GITHUB_SECRET=...
-export TF_VAR_NEXTAUTH_URL=https://ai-chatbot-on-azure-web-app.azurewebsites.net/
-export TF_VAR_OPENAI_API_KEY=...
+# 事前に terraform.tfvars.example を terraform.tfvars にコピーして、値を設定する
 
 terraform init
 
-terraform plan
+terraform plan -var-file=terraform.tfvars
 
-terraform apply
+terraform apply -var-file=terraform.tfvars
 ```
