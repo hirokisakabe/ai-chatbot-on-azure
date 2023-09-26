@@ -1,92 +1,39 @@
-resource "random_pet" "rg_name" {
-  prefix = var.resource_group_name_prefix
+module "resource_group" {
+  source = "./modules/resource_group"
 }
 
-resource "azurerm_resource_group" "rg" {
-  location = var.resource_group_location
-  name     = random_pet.rg_name.id
+module "service_plan" {
+  source                  = "./modules/service_plan"
+  resource_group_name     = module.resource_group.resource_group_name
+  resource_group_location = module.resource_group.resource_group_location
 }
 
-resource "azurerm_service_plan" "service_plan" {
-  name                = "ai-chatbot-on-azure-plan"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  os_type             = "Linux"
-  sku_name            = "P1v2"
+module "redis_cache" {
+  source                  = "./modules/redis_cache"
+  resource_group_name     = module.resource_group.resource_group_name
+  resource_group_location = module.resource_group.resource_group_location
 }
 
-resource "azurerm_linux_web_app" "linux_web_app" {
-  name                = "ai-chatbot-on-azure-web-app"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_service_plan.service_plan.location
-  service_plan_id     = azurerm_service_plan.service_plan.id
-
-  site_config {
-    application_stack {
-      docker_image_name = "samples/ai-chatbot-on-azure:latest"
-      docker_registry_url = "https://aichatbotonazureregistry.azurecr.io"
-      docker_registry_username =  azurerm_container_registry.acr.admin_username
-      docker_registry_password = azurerm_container_registry.acr.admin_password
-    }
-  }
-  app_settings = {
-    WEBSITES_PORT = 3000
-    DOCKER_REGISTRY_SERVER_URL = "https://aichatbotonazureregistry.azurecr.io"
-    DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.acr.admin_username
-    DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.acr.admin_password
-    NEXTAUTH_SECRET = var.NEXTAUTH_SECRET
-    NEXTAUTH_URL = var.NEXTAUTH_URL
-    AUTH_GITHUB_ID = var.AUTH_GITHUB_ID
-    AUTH_GITHUB_SECRET = var.AUTH_GITHUB_SECRET
-    REDIS_HOST=azurerm_redis_cache.redis.hostname
-    REDIS_PORT=azurerm_redis_cache.redis.port
-    REDIS_PASSWORD=azurerm_redis_cache.redis.primary_access_key
-    OPENAI_API_KEY = var.OPENAI_API_KEY
-  }
-  identity {
-    type = "SystemAssigned"
-  }
+module "linux_web_app" {
+  source                            = "./modules/linux_web_app"
+  resource_group_name               = module.resource_group.resource_group_name
+  resource_group_location           = module.resource_group.resource_group_location
+  service_plan_id                   = module.service_plan.id
+  container_registry_admin_username = module.container_registry.admin_username
+  container_registry_admin_password = module.container_registry.admin_password
+  redis_host                        = module.redis_cache.hostname
+  redis_port                        = module.redis_cache.port
+  redis_password                    = module.redis_cache.primary_access_key
+  NEXTAUTH_SECRET                   = var.NEXTAUTH_SECRET
+  NEXTAUTH_URL                      = var.NEXTAUTH_URL
+  AUTH_GITHUB_ID                    = var.AUTH_GITHUB_ID
+  AUTH_GITHUB_SECRET                = var.AUTH_GITHUB_SECRET
+  OPENAI_API_KEY                    = var.OPENAI_API_KEY
 }
 
-resource "azurerm_container_registry" "acr" {
-  name                = "aichatbotonazureregistry"
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  sku                 = "Standard"
-  admin_enabled       = true
+module "container_registry" {
+  source                  = "./modules/container_registry"
+  resource_group_name     = module.resource_group.resource_group_name
+  resource_group_location = module.resource_group.resource_group_location
 }
 
-variable "NEXTAUTH_SECRET" {
-  type    = string
-  default = null
-}
-variable "AUTH_GITHUB_ID" {
-  type    = string
-  default = null
-}
-variable "AUTH_GITHUB_SECRET" {
-  type    = string
-  default = null
-}
-variable "NEXTAUTH_URL" {
-  type    = string
-  default = null
-}
-variable "OPENAI_API_KEY" {
-  type    = string
-  default = null
-}
-
-resource "azurerm_redis_cache" "redis" {
-  name                = "ai-chatbot-on-azure-redis"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  capacity            = 2
-  family              = "C"
-  sku_name            = "Standard"
-  enable_non_ssl_port = true
-  minimum_tls_version = "1.2"
-
-  redis_configuration {
-  }
-}
