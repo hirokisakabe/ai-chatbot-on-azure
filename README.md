@@ -1,5 +1,15 @@
 # ai-chatbot-on-azure
 
+https://github.com/vercel-labs/ai-chatbot を Azure にデプロイしてみるサンプル
+
+使っているサービスは以下の通り
+
+- App Service
+- Azure Container Registry
+- Azure Cache for Redis
+
+OpenAI は Azure AI services ではなく、OpenAI の API を直接使っている
+
 ## infra のデプロイ手順
 
 ```bash
