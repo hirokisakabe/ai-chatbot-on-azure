@@ -6,8 +6,8 @@ resource "azurerm_linux_web_app" "linux_web_app" {
 
   site_config {
     application_stack {
-      docker_image_name        = "samples/ai-chatbot-on-azure:latest"
-      docker_registry_url      = "https://aichatbotonazureregistry.azurecr.io"
+      docker_image_name        = var.docker_image_name
+      docker_registry_url      = var.container_registry_url
       docker_registry_username = var.container_registry_admin_username
       docker_registry_password = var.container_registry_admin_password
     }
@@ -15,7 +15,7 @@ resource "azurerm_linux_web_app" "linux_web_app" {
 
   app_settings = {
     WEBSITES_PORT                   = 3000
-    DOCKER_REGISTRY_SERVER_URL      = "https://aichatbotonazureregistry.azurecr.io"
+    DOCKER_REGISTRY_SERVER_URL      = var.container_registry_url
     DOCKER_REGISTRY_SERVER_USERNAME = var.container_registry_admin_username
     DOCKER_REGISTRY_SERVER_PASSWORD = var.container_registry_admin_password
     NEXTAUTH_SECRET                 = var.NEXTAUTH_SECRET
