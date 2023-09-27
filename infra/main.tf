@@ -22,6 +22,8 @@ module "linux_web_app" {
   resource_group_name               = module.resource_group.resource_group_name
   resource_group_location           = module.resource_group.resource_group_location
   service_plan_id                   = module.service_plan.id
+  docker_image_name                 = "samples/ai-chatbot-on-azure:latest"
+  container_registry_url            = module.container_registry.url
   container_registry_admin_username = module.container_registry.admin_username
   container_registry_admin_password = module.container_registry.admin_password
   redis_host                        = module.redis_cache.hostname
