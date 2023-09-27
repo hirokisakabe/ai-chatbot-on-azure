@@ -4,18 +4,21 @@ module "resource_group" {
 
 module "service_plan" {
   source                  = "./modules/service_plan"
+  project_name            = var.project_name
   resource_group_name     = module.resource_group.resource_group_name
   resource_group_location = module.resource_group.resource_group_location
 }
 
 module "redis_cache" {
   source                  = "./modules/redis_cache"
+  project_name            = var.project_name
   resource_group_name     = module.resource_group.resource_group_name
   resource_group_location = module.resource_group.resource_group_location
 }
 
 module "linux_web_app" {
   source                            = "./modules/linux_web_app"
+  project_name                      = var.project_name
   resource_group_name               = module.resource_group.resource_group_name
   resource_group_location           = module.resource_group.resource_group_location
   service_plan_id                   = module.service_plan.id
@@ -33,6 +36,7 @@ module "linux_web_app" {
 
 module "container_registry" {
   source                  = "./modules/container_registry"
+  project_name            = var.project_name
   resource_group_name     = module.resource_group.resource_group_name
   resource_group_location = module.resource_group.resource_group_location
 }

@@ -1,5 +1,5 @@
 resource "azurerm_redis_cache" "redis" {
-  name                = "ai-chatbot-on-azure-redis"
+  name                = "${var.project_name}-redis"
   location            = var.resource_group_location
   resource_group_name = var.resource_group_name
   capacity            = 2

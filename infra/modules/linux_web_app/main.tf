@@ -1,5 +1,5 @@
 resource "azurerm_linux_web_app" "linux_web_app" {
-  name                = "ai-chatbot-on-azure-web-app"
+  name                = "${var.project_name}-web-app"
   resource_group_name = var.resource_group_name
   location            = var.resource_group_location
   service_plan_id     = var.service_plan_id
