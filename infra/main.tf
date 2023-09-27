@@ -30,7 +30,6 @@ module "linux_web_app" {
   redis_port                        = module.redis_cache.port
   redis_password                    = module.redis_cache.primary_access_key
   NEXTAUTH_SECRET                   = var.NEXTAUTH_SECRET
-  NEXTAUTH_URL                      = var.NEXTAUTH_URL
   AUTH_GITHUB_ID                    = var.AUTH_GITHUB_ID
   AUTH_GITHUB_SECRET                = var.AUTH_GITHUB_SECRET
   OPENAI_API_KEY                    = var.OPENAI_API_KEY
