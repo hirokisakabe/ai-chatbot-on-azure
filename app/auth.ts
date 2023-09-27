@@ -1,4 +1,8 @@
-import NextAuth, { getServerSession, type DefaultSession } from 'next-auth'
+import NextAuth, {
+  getServerSession,
+  type DefaultSession,
+  type AuthOptions
+} from 'next-auth'
 
 declare module 'next-auth' {
   interface Session {
@@ -11,7 +15,7 @@ declare module 'next-auth' {
 
 import GithubProvider from 'next-auth/providers/github'
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     GithubProvider({
       clientId: process.env.AUTH_GITHUB_ID || '',
@@ -19,19 +23,21 @@ export const authOptions = {
     })
   ],
   callbacks: {
-    jwt({ token, user }: any) {
+    jwt({ token, user }) {
       if (user) {
         token = { ...token, user: { id: user?.id } }
       }
       return token
     },
-    session({ session, token }: any) {
-      session.user.id = token?.user?.id
+    session({ session, token }) {
+      // @ts-ignore
+      const userId = token?.user?.id
+
+      if (typeof userId === 'string') {
+        session.user.id = userId
+      }
 
       return session
-    },
-    authorized({ auth }: any) {
-      return !!auth?.user // this ensures there is a logged in user for -every- request
     }
   }
 }
