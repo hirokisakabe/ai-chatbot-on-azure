@@ -10,6 +10,18 @@ https://github.com/vercel-labs/ai-chatbot を Azure にデプロイしてみる�
 
 OpenAI は Azure AI services ではなく、OpenAI の API を直接使っている
 
+## app のデプロイ手順
+
+```bash
+az login
+
+az acr login -n aichatbotonazureregistry
+
+docker build . -t aichatbotonazureregistry.azurecr.io/samples/ai-chatbot-on-azure:latest
+
+docker push aichatbotonazureregistry.azurecr.io/samples/ai-chatbot-on-azure:latest
+```
+
 ## infra のデプロイ手順
 
 ```bash
