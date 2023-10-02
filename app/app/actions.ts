@@ -14,7 +14,12 @@ export async function getChats(userId?: string | null) {
 
   try {
     const pipeline = redis.pipeline()
-    const chats: string[] = await redis.zrange(`user:chat:${userId}`, 0, -1)
+    const chats: string[] = await redis.zrange(
+      `user:chat:${userId}`,
+      0,
+      -1,
+      'REV'
+    )
 
     for (const chat of chats) {
       pipeline.hgetall(chat)
